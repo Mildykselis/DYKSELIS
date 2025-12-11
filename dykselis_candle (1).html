@@ -1,0 +1,1729 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DYKSELIS - Velas Artesanales de Lujo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(to bottom, #ffffff 0%, #fdf5f7 100%);
+            color: #2d2d2d;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        .page-container {
+            position: relative;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        .page {
+            position: absolute;
+            width: 100%;
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.8s cubic-bezier(0.645, 0.045, 0.355, 1);
+            pointer-events: none;
+        }
+
+        .page.active {
+            position: relative;
+            opacity: 1;
+            transform: translateX(0);
+            pointer-events: auto;
+        }
+
+        .page.exit-left {
+            transform: translateX(-100%);
+            opacity: 0;
+        }
+
+        .page.exit-right {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+
+        header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            padding: 25px 0;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+        }
+
+        header.scrolled {
+            box-shadow: 0 5px 30px rgba(0, 0, 0, 0.1);
+            padding: 20px 0;
+        }
+
+        nav {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 40px;
+        }
+
+        .logo {
+            font-size: 2.2em;
+            font-weight: 300;
+            color: #d4a5a5;
+            letter-spacing: 8px;
+            text-transform: uppercase;
+            cursor: pointer;
+        }
+
+        .cart-icon {
+            position: relative;
+            cursor: pointer;
+            font-size: 1.8em;
+            color: #d4a5a5;
+            transition: transform 0.3s;
+        }
+
+        .cart-icon:hover {
+            transform: scale(1.1);
+        }
+
+        .history-icon {
+            cursor: pointer;
+            font-size: 1.8em;
+            color: #d4a5a5;
+            transition: transform 0.3s;
+        }
+
+        .history-icon:hover {
+            transform: scale(1.1);
+        }
+
+        .purchase-card {
+            background: white;
+            padding: 30px;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s;
+        }
+
+        .purchase-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(212, 165, 165, 0.2);
+        }
+
+        .purchase-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #f0f0f0;
+            margin-bottom: 20px;
+        }
+
+        .purchase-number {
+            font-size: 1.2em;
+            color: #d4a5a5;
+            font-weight: 500;
+        }
+
+        .purchase-date {
+            color: #8b8b8b;
+            font-size: 0.9em;
+        }
+
+        .purchase-items {
+            margin-bottom: 20px;
+        }
+
+        .purchase-item-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #f8f8f8;
+        }
+
+        .purchase-total {
+            display: flex;
+            justify-content: space-between;
+            font-size: 1.3em;
+            color: #d4a5a5;
+            font-weight: 500;
+            padding-top: 15px;
+            margin-top: 15px;
+            border-top: 2px solid #d4a5a5;
+        }
+
+        .purchase-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .view-receipt-btn {
+            flex: 1;
+            padding: 12px;
+            background: #d4a5a5;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            font-size: 0.9em;
+        }
+
+        .view-receipt-btn:hover {
+            background: #c99090;
+            transform: translateY(-2px);
+        }
+
+        .cart-count {
+            position: absolute;
+            top: -8px;
+            right: -12px;
+            background: #d4a5a5;
+            color: white;
+            border-radius: 50%;
+            width: 22px;
+            height: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.5em;
+            font-weight: bold;
+        }
+
+        .cart-sidebar {
+            position: fixed;
+            right: -400px;
+            top: 0;
+            width: 400px;
+            height: 100vh;
+            background: white;
+            box-shadow: -5px 0 20px rgba(0, 0, 0, 0.1);
+            z-index: 2000;
+            transition: right 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow-y: auto;
+        }
+
+        .cart-sidebar.open {
+            right: 0;
+        }
+
+        .cart-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1999;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.4s;
+        }
+
+        .cart-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .cart-header {
+            padding: 30px;
+            background: linear-gradient(135deg, #ffeef3 0%, #ffd9e4 100%);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .cart-header h2 {
+            color: #d4a5a5;
+            font-size: 1.8em;
+            font-weight: 300;
+            letter-spacing: 3px;
+        }
+
+        .close-cart {
+            font-size: 2em;
+            cursor: pointer;
+            color: #d4a5a5;
+            transition: transform 0.3s;
+        }
+
+        .close-cart:hover {
+            transform: rotate(90deg);
+        }
+
+        .cart-items {
+            padding: 20px;
+        }
+
+        .cart-item {
+            display: flex;
+            gap: 15px;
+            padding: 20px;
+            border-bottom: 1px solid #f0f0f0;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .cart-item-image {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #ffeef3 0%, #ffd9e4 100%);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .cart-item-details {
+            flex: 1;
+        }
+
+        .cart-item-name {
+            color: #d4a5a5;
+            font-size: 1.1em;
+            margin-bottom: 5px;
+            font-weight: 400;
+        }
+
+        .cart-item-price {
+            color: #6d6d6d;
+            font-size: 1em;
+        }
+
+        .cart-item-quantity {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .qty-btn {
+            width: 25px;
+            height: 25px;
+            border: 1px solid #d4a5a5;
+            background: white;
+            color: #d4a5a5;
+            cursor: pointer;
+            border-radius: 3px;
+            transition: all 0.3s;
+        }
+
+        .qty-btn:hover {
+            background: #d4a5a5;
+            color: white;
+        }
+
+        .remove-item {
+            color: #ff6b6b;
+            cursor: pointer;
+            font-size: 1.2em;
+            transition: transform 0.3s;
+        }
+
+        .remove-item:hover {
+            transform: scale(1.2);
+        }
+
+        .cart-empty {
+            text-align: center;
+            padding: 60px 20px;
+            color: #8b8b8b;
+        }
+
+        .cart-empty-icon {
+            font-size: 4em;
+            margin-bottom: 20px;
+        }
+
+        .cart-footer {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            padding: 20px 30px;
+            border-top: 2px solid #f0f0f0;
+        }
+
+        .cart-total {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            font-size: 1.3em;
+            color: #d4a5a5;
+            font-weight: 400;
+        }
+
+        .cart-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .cart-action-btn {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #d4a5a5;
+            background: white;
+            color: #d4a5a5;
+            font-size: 0.9em;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+
+        .cart-action-btn:hover {
+            background: #ffeef3;
+            transform: translateY(-2px);
+        }
+
+        .checkout-btn {
+            width: 100%;
+            padding: 15px;
+            background: #d4a5a5;
+            color: white;
+            border: none;
+            font-size: 1.1em;
+            letter-spacing: 2px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+        }
+
+        .checkout-btn:hover {
+            background: #c99090;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(212, 165, 165, 0.4);
+        }
+
+        .add-to-cart-btn {
+            display: inline-block;
+            padding: 12px 35px;
+            background: #d4a5a5;
+            color: white;
+            text-decoration: none;
+            transition: all 0.3s;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            font-size: 0.9em;
+            border: none;
+            cursor: pointer;
+        }
+
+        .add-to-cart-btn:hover {
+            background: #c99090;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(212, 165, 165, 0.3);
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 45px;
+        }
+
+        .receipt-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 3000;
+            justify-content: center;
+            align-items: center;
+            animation: fadeIn 0.3s;
+        }
+
+        .receipt-modal.active {
+            display: flex;
+        }
+
+        .receipt-container {
+            background: white;
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+            border-radius: 10px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: slideUp 0.4s;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .receipt-content {
+            padding: 40px;
+        }
+
+        .receipt-header {
+            text-align: center;
+            border-bottom: 2px solid #d4a5a5;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+
+        .receipt-logo {
+            font-size: 2.5em;
+            color: #d4a5a5;
+            letter-spacing: 6px;
+            font-weight: 300;
+            margin-bottom: 10px;
+        }
+
+        .receipt-subtitle {
+            color: #8b8b8b;
+            font-size: 0.9em;
+        }
+
+        .receipt-info {
+            margin-bottom: 30px;
+            font-size: 0.9em;
+            color: #6d6d6d;
+        }
+
+        .receipt-info p {
+            margin: 5px 0;
+        }
+
+        .receipt-items {
+            margin-bottom: 30px;
+        }
+
+        .receipt-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 15px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .receipt-item-name {
+            flex: 1;
+        }
+
+        .receipt-item-qty {
+            color: #8b8b8b;
+            margin: 0 20px;
+        }
+
+        .receipt-item-price {
+            font-weight: 500;
+            color: #d4a5a5;
+        }
+
+        .receipt-totals {
+            border-top: 2px solid #d4a5a5;
+            padding-top: 20px;
+            margin-top: 20px;
+        }
+
+        .receipt-total-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 10px 0;
+            font-size: 1.1em;
+        }
+
+        .receipt-total-row.final {
+            font-size: 1.4em;
+            color: #d4a5a5;
+            font-weight: 500;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .receipt-footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 30px;
+            border-top: 2px dashed #d4a5a5;
+            color: #8b8b8b;
+            font-size: 0.9em;
+        }
+
+        .receipt-actions {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .receipt-btn {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            cursor: pointer;
+            font-size: 1em;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            transition: all 0.3s;
+        }
+
+        .download-btn {
+            background: #d4a5a5;
+            color: white;
+        }
+
+        .download-btn:hover {
+            background: #c99090;
+            transform: translateY(-2px);
+        }
+
+        .close-receipt-btn {
+            background: white;
+            color: #d4a5a5;
+            border: 2px solid #d4a5a5;
+        }
+
+        .close-receipt-btn:hover {
+            background: #ffeef3;
+        }
+
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            .receipt-content, .receipt-content * {
+                visibility: visible;
+            }
+            .receipt-content {
+                position: absolute;
+                left: 0;
+                top: 0;
+            }
+            .receipt-actions {
+                display: none;
+            }
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 45px;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: #6d6d6d;
+            text-decoration: none;
+            transition: color 0.3s;
+            font-size: 1em;
+            font-weight: 400;
+            letter-spacing: 1px;
+            cursor: pointer;
+        }
+
+        .nav-links a:hover {
+            color: #d4a5a5;
+        }
+
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            position: relative;
+            padding: 120px 20px 80px;
+            background: linear-gradient(135deg, #fff8fa 0%, #ffeef3 50%, #fff 100%);
+        }
+
+        .hero-candle {
+            position: absolute;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .hero-candle .candle-visual {
+            width: 140px;
+            height: 200px;
+        }
+
+        .hero-candle .candle-body {
+            background: linear-gradient(to bottom, #d4a5a5 0%, #c99090 100%);
+        }
+
+        .hero-content {
+            z-index: 10;
+            max-width: 900px;
+        }
+
+        .hero h1 {
+            font-size: 5em;
+            margin-bottom: 30px;
+            color: #d4a5a5;
+            font-weight: 200;
+            letter-spacing: 15px;
+            text-transform: uppercase;
+        }
+
+        .hero .subtitle {
+            font-size: 1.3em;
+            margin-bottom: 50px;
+            color: #8b8b8b;
+            font-weight: 300;
+            letter-spacing: 3px;
+        }
+
+        .hero .description {
+            font-size: 1.1em;
+            margin-bottom: 50px;
+            color: #6d6d6d;
+            line-height: 1.8;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 18px 50px;
+            background: #d4a5a5;
+            color: #fff;
+            text-decoration: none;
+            font-weight: 400;
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            font-size: 0.95em;
+            cursor: pointer;
+            border: none;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn:hover {
+            background: #c99090;
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 15px 35px rgba(212, 165, 165, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(-1px) scale(1.02);
+        }
+
+        .content-section {
+            max-width: 1400px;
+            margin: 100px auto;
+            padding: 120px 40px 80px;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 3em;
+            margin-bottom: 20px;
+            color: #d4a5a5;
+            font-weight: 300;
+            letter-spacing: 8px;
+            text-transform: uppercase;
+        }
+
+        .section-subtitle {
+            text-align: center;
+            font-size: 1.1em;
+            margin-bottom: 80px;
+            color: #8b8b8b;
+            font-weight: 300;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 50px;
+            margin-bottom: 100px;
+        }
+
+        .feature-card {
+            background: #fff;
+            padding: 50px 40px;
+            text-align: center;
+            transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.05);
+            transform: translateY(0);
+        }
+
+        .feature-card:hover {
+            transform: translateY(-15px) scale(1.02);
+            box-shadow: 0 20px 50px rgba(212, 165, 165, 0.25);
+        }
+
+        .feature-icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 30px;
+            background: linear-gradient(135deg, #ffeef3 0%, #ffd9e4 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2em;
+            transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .feature-card:hover .feature-icon {
+            transform: rotate(360deg) scale(1.1);
+        }
+
+        .feature-card h3 {
+            color: #d4a5a5;
+            margin-bottom: 20px;
+            font-size: 1.4em;
+            font-weight: 400;
+            letter-spacing: 2px;
+        }
+
+        .feature-card p {
+            color: #6d6d6d;
+            line-height: 1.8;
+            font-weight: 300;
+        }
+
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 40px;
+        }
+
+        .product-card {
+            background: #fff;
+            overflow: hidden;
+            transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.06);
+        }
+
+        .product-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 20px 50px rgba(212, 165, 165, 0.3);
+        }
+
+        .product-image {
+            width: 100%;
+            height: 300px;
+            background-size: cover;
+            background-position: center;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .product-card:hover .product-image {
+            transform: scale(1.1);
+        }
+
+        .product-card:nth-child(1) .product-image {
+            background-image: url('https://images.unsplash.com/photo-1602874801006-64c8b8025d45?w=800&q=80');
+        }
+
+        .product-card:nth-child(2) .product-image {
+            background-image: url('https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?w=800&q=80');
+        }
+
+        .product-card:nth-child(3) .product-image {
+            background-image: url('https://images.unsplash.com/photo-1602874801006-e26d41f0ba1f?w=800&q=80');
+        }
+
+        .product-content {
+            padding: 40px;
+        }
+
+        .product-card h3 {
+            color: #d4a5a5;
+            margin-bottom: 15px;
+            font-size: 1.6em;
+            font-weight: 400;
+            letter-spacing: 2px;
+        }
+
+        .product-card p {
+            color: #6d6d6d;
+            line-height: 1.8;
+            margin-bottom: 25px;
+            font-weight: 300;
+        }
+
+        .product-price {
+            font-size: 1.4em;
+            color: #d4a5a5;
+            font-weight: 400;
+            margin-bottom: 20px;
+        }
+
+        .btn-secondary {
+            display: inline-block;
+            padding: 12px 35px;
+            border: 2px solid #d4a5a5;
+            color: #d4a5a5;
+            text-decoration: none;
+            transition: all 0.3s;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            font-size: 0.9em;
+        }
+
+        .btn-secondary:hover {
+            background: #d4a5a5;
+            color: #fff;
+        }
+
+        .about-content {
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .about-content h2 {
+            font-size: 3em;
+            margin-bottom: 30px;
+            color: #d4a5a5;
+            font-weight: 300;
+            letter-spacing: 8px;
+        }
+
+        .about-content p {
+            font-size: 1.15em;
+            line-height: 2;
+            color: #6d6d6d;
+            margin-bottom: 25px;
+            font-weight: 300;
+        }
+
+        .contact-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 60px;
+            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.08);
+        }
+
+        .contact-form {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            color: #d4a5a5;
+            margin-bottom: 10px;
+            font-weight: 400;
+            letter-spacing: 1px;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            padding: 15px;
+            border: 2px solid #f0f0f0;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #d4a5a5;
+        }
+
+        .form-group textarea {
+            min-height: 150px;
+            resize: vertical;
+        }
+
+        footer {
+            background: linear-gradient(to bottom, #ffeef3 0%, #ffd9e4 100%);
+            text-align: center;
+            padding: 60px 40px;
+            margin-top: 100px;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .footer-logo {
+            font-size: 2em;
+            color: #d4a5a5;
+            letter-spacing: 6px;
+            margin-bottom: 20px;
+            font-weight: 300;
+        }
+
+        footer p {
+            color: #8b8b8b;
+            margin: 10px 0;
+            font-weight: 300;
+        }
+
+        .social-links {
+            margin-top: 30px;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .social-links a {
+            color: #d4a5a5;
+            font-size: 1.5em;
+            transition: transform 0.3s;
+            text-decoration: none;
+        }
+
+        .social-links a:hover {
+            transform: scale(1.2);
+        }
+
+        @media (max-width: 1024px) {
+            .feature-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .cart-sidebar {
+                width: 350px;
+                right: -350px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2.5em;
+                letter-spacing: 5px;
+            }
+
+            .hero .subtitle {
+                font-size: 1em;
+            }
+
+            .hero .description {
+                font-size: 1em;
+            }
+            
+            .feature-grid {
+                grid-template-columns: 1fr;
+                gap: 30px;
+            }
+            
+            .nav-links {
+                position: fixed;
+                top: 80px;
+                left: -100%;
+                width: 100%;
+                height: calc(100vh - 80px);
+                background: white;
+                flex-direction: column;
+                padding: 40px;
+                gap: 30px;
+                transition: left 0.4s;
+                z-index: 999;
+                box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            }
+
+            .nav-links.open {
+                left: 0;
+            }
+
+            .nav-links a {
+                font-size: 1.2em;
+                padding: 15px 0;
+                border-bottom: 1px solid #f0f0f0;
+            }
+
+            .mobile-menu-btn {
+                display: block;
+            }
+            
+            .logo {
+                font-size: 1.3em;
+                letter-spacing: 3px;
+            }
+
+            .cart-icon {
+                font-size: 1.5em;
+            }
+
+            .product-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .contact-container {
+                padding: 40px 20px;
+            }
+
+            .section-title {
+                font-size: 2em;
+                letter-spacing: 4px;
+            }
+
+            .cart-sidebar {
+                width: 100%;
+                right: -100%;
+            }
+
+            nav {
+                padding: 0 20px;
+            }
+
+            .content-section {
+                padding: 100px 20px 60px;
+            }
+
+            .hero-candle {
+                bottom: 40px;
+            }
+
+            .hero-candle .candle-visual {
+                width: 110px;
+                height: 160px;
+            }
+        }
+
+        .mobile-menu-btn {
+            display: none;
+            font-size: 1.8em;
+            color: #d4a5a5;
+            cursor: pointer;
+            background: none;
+            border: none;
+        }
+
+        @media (max-width: 480px) {
+            .hero h1 {
+                font-size: 2em;
+                letter-spacing: 3px;
+            }
+
+            .logo {
+                font-size: 1.1em;
+                letter-spacing: 2px;
+            }
+
+            .btn {
+                padding: 15px 35px;
+                font-size: 0.85em;
+            }
+
+            .feature-card {
+                padding: 30px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="logo" onclick="showPage('inicio')">DYKSELIS</div>
+            <button class="mobile-menu-btn" onclick="toggleMenu()">☰</button>
+            <div class="nav-right">
+                <ul class="nav-links" id="navLinks">
+                    <li><a onclick="showPage('inicio'); closeMenu()">Inicio</a></li>
+                    <li><a onclick="showPage('colecciones'); closeMenu()">Colecciones</a></li>
+                    <li><a onclick="showPage('productos'); closeMenu()">Productos</a></li>
+                    <li><a onclick="showPage('nosotros'); closeMenu()">Nosotros</a></li>
+                    <li><a onclick="showPage('compras'); closeMenu()">Compras</a></li>
+                    <li><a onclick="showPage('contacto'); closeMenu()">Contacto</a></li>
+                </ul>
+                <div class="history-icon" onclick="showPage('compras')" title="Ver Mis Compras">
+                    📋
+                </div>
+                <div class="cart-icon" onclick="toggleCart()">
+                    🛒
+                    <span class="cart-count" id="cartCount">0</span>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <div class="cart-overlay" id="cartOverlay" onclick="toggleCart()"></div>
+    
+    <div class="cart-sidebar" id="cartSidebar">
+        <div class="cart-header">
+            <h2>MI CARRITO</h2>
+            <span class="close-cart" onclick="toggleCart()">×</span>
+        </div>
+        <div class="cart-items" id="cartItems">
+            <div class="cart-empty">
+                <div class="cart-empty-icon">🛍️</div>
+                <p>Tu carrito está vacío</p>
+            </div>
+        </div>
+        <div class="cart-footer" id="cartFooter" style="display: none;">
+            <div class="cart-total">
+                <span>Total:</span>
+                <span id="cartTotal">$0 MXN</span>
+            </div>
+            <div class="cart-buttons">
+                <button class="cart-action-btn" onclick="viewReceipt()">
+                    📄 Ver Nota
+                </button>
+                <button class="cart-action-btn" onclick="printReceipt()">
+                    🖨️ Imprimir
+                </button>
+            </div>
+            <button class="checkout-btn" onclick="checkout()">Finalizar Compra</button>
+        </div>
+    </div>
+
+    <div class="receipt-modal" id="receiptModal">
+        <div class="receipt-container">
+            <div class="receipt-content" id="receiptContent">
+                <div class="receipt-header">
+                    <div class="receipt-logo">DYKSELIS</div>
+                    <div class="receipt-subtitle">Velas Artesanales de Lujo</div>
+                </div>
+                
+                <div class="receipt-info">
+                    <p><strong>Fecha:</strong> <span id="receiptDate"></span></p>
+                    <p><strong>Nota de Venta:</strong> #<span id="receiptNumber"></span></p>
+                    <p><strong>Cliente:</strong> Estimado Cliente</p>
+                </div>
+
+                <div class="receipt-items" id="receiptItems"></div>
+
+                <div class="receipt-totals">
+                    <div class="receipt-total-row">
+                        <span>Subtotal:</span>
+                        <span id="receiptSubtotal">$0 MXN</span>
+                    </div>
+                    <div class="receipt-total-row final">
+                        <span>TOTAL:</span>
+                        <span id="receiptTotal">$0 MXN</span>
+                    </div>
+                </div>
+
+                <div class="receipt-footer">
+                    <p><strong>DYKSELIS</strong></p>
+                    <p>Ciudad del Carmen, Campeche, México</p>
+                    <p>Tel: +52 938 277 5046</p>
+                    <p>contacto@dykselis.com</p>
+                    <p style="margin-top: 20px;">¡Gracias por tu compra!</p>
+                </div>
+
+                <div class="receipt-actions">
+                    <button class="receipt-btn download-btn" onclick="downloadReceipt()">📄 Descargar PDF</button>
+                    <button class="receipt-btn close-receipt-btn" onclick="closeReceipt()">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="page-container">
+    <!-- PÁGINA DE INICIO -->
+    <div id="inicio" class="page active">
+        <section class="hero">
+            <div class="hero-content">
+                <h1>DYKSELIS</h1>
+                <p class="subtitle">Velas Artesanales de Lujo</p>
+                <p class="description">Creamos velas únicas elaboradas a mano con ingredientes naturales de la más alta calidad. Cada vela es una obra de arte diseñada para transformar tu espacio en un santuario de elegancia y tranquilidad.</p>
+                <button class="btn" onclick="showPage('productos')">Explorar Colección</button>
+            </div>
+            <div class="hero-candle">
+                <div class="candle-visual">
+                    <div class="candle-glow"></div>
+                    <div class="candle-flame"></div>
+                    <div class="flame-inner"></div>
+                    <div class="candle-wick"></div>
+                    <div class="candle-jar">
+                        <div class="candle-wax" style="background: linear-gradient(to bottom, #d4a5a5 0%, #c99090 50%, #b87d7d 100%);">
+                            <div class="wax-texture"></div>
+                            <div class="candle-label"></div>
+                        </div>
+                        <div class="jar-shine"></div>
+                    </div>
+                    <div class="candle-base"></div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- PÁGINA DE COLECCIONES -->
+    <div id="colecciones" class="page">
+        <section class="content-section">
+            <h2 class="section-title">Nuestras Características</h2>
+            <p class="section-subtitle">Lo que hace especiales nuestras velas</p>
+            
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🕯️</div>
+                    <h3>Artesanía</h3>
+                    <p>Cada vela es elaborada cuidadosamente a mano por artesanos expertos, garantizando calidad excepcional en cada detalle.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🌸</div>
+                    <h3>Aromas Naturales</h3>
+                    <p>Utilizamos aceites esenciales puros y fragancias naturales seleccionadas para crear experiencias aromáticas únicas.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">♻️</div>
+                    <h3>Sostenible</h3>
+                    <p>Comprometidos con el medio ambiente, usamos cera de soja 100% natural y envases reciclables.</p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- PÁGINA DE PRODUCTOS -->
+    <div id="productos" class="page">
+        <section class="content-section">
+            <h2 class="section-title">Nuestros Productos</h2>
+            <p class="section-subtitle">Explora nuestra colección completa</p>
+            
+            <h3 style="text-align: center; color: #d4a5a5; font-size: 2em; margin: 60px 0 40px; font-weight: 300; letter-spacing: 4px;">VELAS</h3>
+            
+            <div class="product-grid">
+                <div class="product-card">
+                    <div class="product-image">
+                        <div class="candle-visual">
+                            <div class="candle-glow"></div>
+                            <div class="candle-flame"></div>
+                            <div class="flame-inner"></div>
+                            <div class="candle-wick"></div>
+                            <div class="candle-jar">
+                                <div class="candle-wax">
+                                    <div class="wax-texture"></div>
+                                    <div class="candle-label"></div>
+                                </div>
+                                <div class="jar-shine"></div>
+                            </div>
+                            <div class="candle-base"></div>
+                        </div>
+                    </div>
+                    <div class="product-content">
+                        <h3>Rosa Elegante</h3>
+                        <p>Aroma delicado de rosas frescas con toques de jazmín. Perfecta para crear ambientes románticos y sofisticados.</p>
+                        <p class="product-price">$100 MXN</p>
+                        <button class="add-to-cart-btn" onclick="addToCart('Rosa Elegante', 100, 'vela')">Agregar al Carrito</button>
+                    </div>
+                </div>
+                <div class="product-card">
+                    <div class="product-image">
+                        <div class="candle-visual">
+                            <div class="candle-glow"></div>
+                            <div class="candle-flame"></div>
+                            <div class="flame-inner"></div>
+                            <div class="candle-wick"></div>
+                            <div class="candle-jar">
+                                <div class="candle-wax">
+                                    <div class="wax-texture"></div>
+                                    <div class="candle-label"></div>
+                                </div>
+                                <div class="jar-shine"></div>
+                            </div>
+                            <div class="candle-base"></div>
+                        </div>
+                    </div>
+                    <div class="product-content">
+                        <h3>Lavanda Serenidad</h3>
+                        <p>Lavanda pura que promueve la relajación y el bienestar. Ideal para momentos de meditación y descanso.</p>
+                        <p class="product-price">$100 MXN</p>
+                        <button class="add-to-cart-btn" onclick="addToCart('Lavanda Serenidad', 100, 'vela')">Agregar al Carrito</button>
+                    </div>
+                </div>
+                <div class="product-card">
+                    <div class="product-image">
+                        <div class="candle-visual">
+                            <div class="candle-glow"></div>
+                            <div class="candle-flame"></div>
+                            <div class="flame-inner"></div>
+                            <div class="candle-wick"></div>
+                            <div class="candle-jar">
+                                <div class="candle-wax">
+                                    <div class="wax-texture"></div>
+                                    <div class="candle-label"></div>
+                                </div>
+                                <div class="jar-shine"></div>
+                            </div>
+                            <div class="candle-base"></div>
+                        </div>
+                    </div>
+                    <div class="product-content">
+                        <h3>Vainilla Dulce</h3>
+                        <p>Vainilla natural con notas cálidas y acogedoras. Crea una atmósfera de confort y calidez en cualquier espacio.</p>
+                        <p class="product-price">$100 MXN</p>
+                        <button class="add-to-cart-btn" onclick="addToCart('Vainilla Dulce', 100, 'vela')">Agregar al Carrito</button>
+                    </div>
+                </div>
+            </div>
+
+            <h3 style="text-align: center; color: #d4a5a5; font-size: 2em; margin: 80px 0 40px; font-weight: 300; letter-spacing: 4px;">JABONES</h3>
+            
+            <div class="product-grid">
+                <div class="product-card">
+                    <div class="product-image">
+                        <div class="soap-visual">
+                            <div class="soap-body">
+                                <div class="soap-shine"></div>
+                            </div>
+                            <div class="soap-bubble"></div>
+                            <div class="soap-bubble"></div>
+                            <div class="soap-bubble"></div>
+                        </div>
+                    </div>
+                    <div class="product-content">
+                        <h3>Jabón de Rosa</h3>
+                        <p>Jabón artesanal con aceites esenciales de rosa. Suaviza e hidrata la piel dejando un aroma floral delicado.</p>
+                        <p class="product-price">$100 MXN</p>
+                        <button class="add-to-cart-btn" onclick="addToCart('Jabón de Rosa', 100, 'jabón')">Agregar al Carrito</button>
+                    </div>
+                </div>
+                <div class="product-card">
+                    <div class="product-image">
+                        <div class="soap-visual">
+                            <div class="soap-body" style="background: linear-gradient(135deg, #e8d5f2 0%, #dac4e8 100%);">
+                                <div class="soap-shine"></div>
+                            </div>
+                            <div class="soap-bubble"></div>
+                            <div class="soap-bubble"></div>
+                            <div class="soap-bubble"></div>
+                        </div>
+                    </div>
+                    <div class="product-content">
+                        <h3>Jabón de Lavanda</h3>
+                        <p>Jabón relajante con lavanda pura. Propiedades calmantes para una experiencia de baño reconfortante.</p>
+                        <p class="product-price">$100 MXN</p>
+                        <button class="add-to-cart-btn" onclick="addToCart('Jabón de Lavanda', 100, 'jabón')">Agregar al Carrito</button>
+                    </div>
+                </div>
+                <div class="product-card">
+                    <div class="product-image">
+                        <div class="soap-visual">
+                            <div class="soap-body" style="background: linear-gradient(135deg, #fff9e6 0%, #ffe8cc 100%);">
+                                <div class="soap-shine"></div>
+                            </div>
+                            <div class="soap-bubble"></div>
+                            <div class="soap-bubble"></div>
+                            <div class="soap-bubble"></div>
+                        </div>
+                    </div>
+                    <div class="product-content">
+                        <h3>Jabón de Vainilla</h3>
+                        <p>Jabón cremoso con extracto de vainilla natural. Nutre profundamente dejando la piel suave y perfumada.</p>
+                        <p class="product-price">$100 MXN</p>
+                        <button class="add-to-cart-btn" onclick="addToCart('Jabón de Vainilla', 100, 'jabón')">Agregar al Carrito</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- PÁGINA NOSOTROS -->
+    <div id="nosotros" class="page">
+        <section class="content-section">
+            <div class="about-content">
+                <h2>NUESTRA HISTORIA</h2>
+                <p>DYKSELIS nace de la pasión por crear experiencias sensoriales únicas. Cada vela que elaboramos es el resultado de años de perfeccionar nuestro arte, combinando técnicas tradicionales con diseños contemporáneos.</p>
+                <p>Nos dedicamos a ofrecer productos de lujo accesibles, manteniendo siempre nuestro compromiso con la calidad, la sostenibilidad y la excelencia artesanal.</p>
+                <p>Cada vela cuenta una historia, cada aroma evoca un recuerdo, y cada luz que enciendes es una invitación a disfrutar de los momentos especiales de la vida.</p>
+            </div>
+        </section>
+    </div>
+
+    <!-- PÁGINA DE COMPRAS -->
+    <div id="compras" class="page">
+        <section class="content-section">
+            <h2 class="section-title">Mis Compras</h2>
+            <p class="section-subtitle">Historial de tus compras realizadas</p>
+            
+            <div id="purchaseList" style="max-width: 900px; margin: 0 auto;">
+                <div class="cart-empty" style="padding: 80px 20px;">
+                    <div class="cart-empty-icon">📦</div>
+                    <p>No hay compras registradas</p>
+                    <p style="font-size: 0.9em; color: #8b8b8b; margin-top: 10px;">Tus compras aparecerán aquí después de finalizar una compra</p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- PÁGINA DE CONTACTO -->
+    <div id="contacto" class="page">
+        <section class="content-section">
+            <h2 class="section-title">Contacto</h2>
+            <p class="section-subtitle">Nos encantaría escucharte</p>
+            
+            <div class="contact-container">
+                <form class="contact-form" onsubmit="return handleSubmit(event)">
+                    <div class="form-group">
+                        <label>Nombre Completo</label>
+                        <input type="text" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Teléfono</label>
+                        <input type="tel" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Mensaje</label>
+                        <textarea required></textarea>
+                    </div>
+                    <button type="submit" class="btn" style="width: 100%;">Enviar Mensaje</button>
+                </form>
+            </div>
+        </section>
+    </div>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-logo">DYKSELIS</div>
+            <p>Velas Artesanales de Lujo</p>
+            <p>Ciudad del Carmen, Campeche, México</p>
+            <p>staremulation.company.com | +52 938 277 5046</p>
+            <div class="social-links">
+                <a href="https://www.instagram.com/dykselis.store" title="Instagram">📷</a>
+                <a href="https://www.facebook.com/share/1HQfV8ry46/" title="Facebook">📘</a>
+                <a href="https://wa.me/529382775046" title="WhatsApp">💬</a>
+            </div>
+            <p style="margin-top: 40px; font-size: 0.9em;">&copy; 2025 DYKSELIS. Todos los derechos reservados.</p>
+        </div>
+    </footer>
+    </div>
+
+    <script>
+        let currentPage = 'inicio';
+        let cart = [];
+
+        function toggleMenu() {
+            const navLinks = document.getElementById('navLinks');
+            navLinks.classList.toggle('open');
+        }
+
+        function closeMenu() {
+            const navLinks = document.getElementById('navLinks');
+            navLinks.classList.remove('open');
+        }
+
+        function toggleCart() {
+            const cartSidebar = document.getElementById('cartSidebar');
+            const cartOverlay = document.getElementById('cartOverlay');
+            cartSidebar.classList.toggle('open');
+            cartOverlay.classList.toggle('active');
+        }
+
+        function addToCart(name, price, type) {
+            const existingItem = cart.find(item => item.name === name);
+            
+            if (existingItem) {
+                existingItem.quantity += 1;
+            } else {
+                cart.push({ name, price, type, quantity: 1 });
+            }
+            
+            updateCart();
+            toggleCart();
+        }
+
+        function removeFromCart(index) {
+            cart.splice(index, 1);
+            updateCart();
+        }
+
+        function updateQuantity(index, change) {
+            cart[index].quantity += change;
+            if (cart[index].quantity <= 0) {
+                removeFromCart(index);
+            } else {
+                updateCart();
+            }
+        }
+
+        function updateCart() {
+            const cartCount = document.getElementById('cartCount');
+            const cartItems = document.getElementById('cartItems');
+            const cartFooter = document.getElementById('cartFooter');
+            const cartTotal = document.getElementById('cartTotal');
+            
+            const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+            cartCount.textContent = totalItems;
+            
+            if (cart.length === 0) {
+                cartItems.innerHTML = `
+                    <div class="cart-empty">
+                        <div class="cart-empty-icon">🛍️</div>
+                        <p>Tu carrito está vacío</p>
+                    </div>
+                `;
+                cartFooter.style.display = 'none';
+            } else {
+                cartItems.innerHTML = cart.map((item, index) => `
+                    <div class="cart-item">
+                        <div class="cart-item-image">${item.type === 'vela' ? '🕯️' : '🧼'}</div>
+                        <div class="cart-item-details">
+                            <div class="cart-item-name">${item.name}</div>
+                            <div class="cart-item-price">${item.price} MXN</div>
+                            <div class="cart-item-quantity">
+                                <button class="qty-btn" onclick="updateQuantity(${index}, -1)">-</button>
+                                <span>${item.quantity}</span>
+                                <button class="qty-btn" onclick="updateQuantity(${index}, 1)">+</button>
+                            </div>
+                        </div>
+                        <span class="remove-item" onclick="removeFromCart(${index})">🗑️</span>
+                    </div>
+                `).join('');
+                
+                const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+                cartTotal.textContent = `${total} MXN`;
+                cartFooter.style.display = 'block';
+            }
+        }
+
+        function checkout() {
+            if (cart.length === 0) return;
+            
+            const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            const items = cart.map(item => `${item.quantity}x ${item.name}`).join(', ');
+            
+            alert(`¡Gracias por tu compra!
+
+Productos: ${items}
+Total: ${total} MXN
+
+Nos pondremos en contacto contigo pronto.`);
+            
+            cart = [];
+            updateCart();
+            toggleCart();
+        }
+
+        function showPage(pageId) {
+            if (currentPage === pageId) return;
+            
+            const pages = document.querySelectorAll('.page');
+            const currentPageEl = document.getElementById(currentPage);
+            const targetPageEl = document.getElementById(pageId);
+            
+            if (!targetPageEl) return;
+            
+            const pageOrder = ['inicio', 'colecciones', 'productos', 'nosotros', 'contacto'];
+            const currentIndex = pageOrder.indexOf(currentPage);
+            const targetIndex = pageOrder.indexOf(pageId);
+            
+            if (currentPageEl) {
+                if (targetIndex > currentIndex) {
+                    currentPageEl.classList.add('exit-left');
+                } else {
+                    currentPageEl.classList.add('exit-right');
+                }
+                
+                setTimeout(() => {
+                    currentPageEl.classList.remove('active', 'exit-left', 'exit-right');
+                }, 800);
+            }
+            
+            setTimeout(() => {
+                targetPageEl.classList.add('active');
+                currentPage = pageId;
+            }, 100);
+            
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function handleSubmit(event) {
+            event.preventDefault();
+            alert('¡Gracias por contactarnos! Responderemos pronto.');
+            event.target.reset();
+            return false;
+        }
+
+        window.addEventListener('scroll', function() {
+            const header = document.querySelector('header');
+            const heroImage = document.querySelector('.hero img');
+            
+            if (window.scrollY > 50) {
+                header.classList.add('scrolled');
+            } else {
+                header.classList.remove('scrolled');
+            }
+            
+            if (heroImage) {
+                const scrolled = window.pageYOffset;
+                heroImage.style.transform = `translateY(${scrolled * 0.3}px) scale(${1 + scrolled * 0.0002})`;
+            }
+        });
+
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, observerOptions);
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const animatedElements = document.querySelectorAll('.feature-card, .product-card');
+            animatedElements.forEach(el => {
+                el.style.opacity = '0';
+                el.style.transform = 'translateY(30px)';
+                el.style.transition = 'opacity 0.8s ease, transform 0.8s ease';
+                observer.observe(el);
+            });
+        });
+    </script>
+</body>
+</html>
